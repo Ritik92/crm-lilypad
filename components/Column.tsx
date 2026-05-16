@@ -15,6 +15,8 @@ const COLUMN_COLORS: Record<LeadStatus, string> = {
   NOT_RESPONDING: 'bg-orange-100 text-orange-700',
   CALL_BACK: 'bg-yellow-100 text-yellow-700',
   INTERESTED: 'bg-blue-100 text-blue-700',
+  FIRST_FOLLOW_UP: 'bg-cyan-100 text-cyan-700',
+  SECOND_FOLLOW_UP: 'bg-teal-100 text-teal-700',
   NOT_INTERESTED: 'bg-red-100 text-red-700',
   HOME_DEMO_SCHEDULED: 'bg-purple-100 text-purple-700',
   HOME_DEMO_COMPLETED: 'bg-indigo-100 text-indigo-700',
