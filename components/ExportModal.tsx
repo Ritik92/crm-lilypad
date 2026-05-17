@@ -7,14 +7,19 @@ interface Props {
 }
 
 const FIELDS = [
-  { key: 'name', label: 'Name' },
+  { key: 'fullName', label: 'Name' },
   { key: 'email', label: 'Email' },
-  { key: 'phone', label: 'Phone' },
-  { key: 'address', label: 'Address' },
-  { key: 'status', label: 'Status' },
-  { key: 'product', label: 'Product' },
-  { key: 'demoDate', label: 'Demo Date' },
-  { key: 'notes', label: 'Notes' },
+  { key: 'mobileNumber', label: 'Phone' },
+  { key: 'addressLine', label: 'Address' },
+  { key: 'pincode', label: 'Pincode' },
+  { key: 'productName', label: 'Product' },
+  { key: 'productBrand', label: 'Brand' },
+  { key: 'crmStatus', label: 'CRM Status' },
+  { key: 'bookingStatus', label: 'Booking Status' },
+  { key: 'demoDate', label: 'Requested Demo Date' },
+  { key: 'timeSlot', label: 'Requested Slot' },
+  { key: 'confirmedDemoAt', label: 'Confirmed Demo At' },
+  { key: 'crmNotes', label: 'Notes' },
   { key: 'createdAt', label: 'Created At' },
 ] as const
 
@@ -98,26 +103,45 @@ export default function ExportModal({ onClose }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md mx-4">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-bold text-slate-800">Export CSV</h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 text-2xl leading-none">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-[2px] px-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-2xl shadow-2xl p-7 w-full max-w-md max-h-[90vh] overflow-y-auto crm-scroll"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-start gap-3 mb-6">
+          <div className="h-9 w-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+              <path d="M12 3v12" />
+              <path d="m7 10 5 5 5-5" />
+              <path d="M5 21h14" />
+            </svg>
+          </div>
+          <div className="flex-1">
+            <h2 className="text-[15px] font-semibold text-slate-900">Export leads</h2>
+            <p className="text-[12px] text-slate-500 mt-0.5">Download a CSV of your pipeline.</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-md w-7 h-7 flex items-center justify-center text-xl leading-none transition-colors -mr-1 -mt-1"
+          >
             ×
           </button>
         </div>
 
         {/* Date range presets */}
-        <p className="text-sm font-medium text-slate-700 mb-2">Date range</p>
+        <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-[0.06em] mb-2">Date range</p>
         <div className="grid grid-cols-4 gap-1.5 mb-4">
           {PRESETS.map(({ key, label }) => (
             <button
               key={key}
               onClick={() => setMode(key)}
-              className={`py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+              className={`h-8 rounded-md text-[12px] font-medium border transition-colors ${
                 mode === key
-                  ? 'bg-green-600 text-white border-green-600'
-                  : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                  ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
+                  : 'border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300'
               }`}
             >
               {label}
@@ -129,21 +153,21 @@ export default function ExportModal({ onClose }: Props) {
         {mode === 'custom' && (
           <div className="flex gap-3 mb-5">
             <div className="flex-1">
-              <label className="text-xs text-slate-500 mb-1 block">From</label>
+              <label className="text-[11px] text-slate-500 mb-1 block">From</label>
               <input
                 type="date"
                 value={customFrom}
                 onChange={(e) => setCustomFrom(e.target.value)}
-                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-300"
+                className="w-full border border-slate-200 rounded-lg px-3 h-9 text-[13px] focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400"
               />
             </div>
             <div className="flex-1">
-              <label className="text-xs text-slate-500 mb-1 block">To</label>
+              <label className="text-[11px] text-slate-500 mb-1 block">To</label>
               <input
                 type="date"
                 value={customTo}
                 onChange={(e) => setCustomTo(e.target.value)}
-                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-300"
+                className="w-full border border-slate-200 rounded-lg px-3 h-9 text-[13px] focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400"
               />
             </div>
           </div>
@@ -151,18 +175,18 @@ export default function ExportModal({ onClose }: Props) {
 
         {/* Field selection */}
         <div className="mb-6">
-          <p className="text-sm font-medium text-slate-700 mb-2.5">Fields to include</p>
-          <div className="grid grid-cols-2 gap-2">
+          <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-[0.06em] mb-2.5">Fields to include</p>
+          <div className="grid grid-cols-2 gap-x-3 gap-y-2">
             {FIELDS.map(({ key, label }) => (
               <label
                 key={key}
-                className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer select-none"
+                className="flex items-center gap-2 text-[13px] text-slate-700 cursor-pointer select-none hover:text-slate-900"
               >
                 <input
                   type="checkbox"
                   checked={selectedFields.includes(key)}
                   onChange={() => toggleField(key)}
-                  className="accent-green-600 w-4 h-4"
+                  className="accent-emerald-600 w-3.5 h-3.5"
                 />
                 {label}
               </label>
@@ -173,9 +197,9 @@ export default function ExportModal({ onClose }: Props) {
         <button
           onClick={handleExport}
           disabled={loading || selectedFields.length === 0}
-          className="w-full bg-green-600 text-white rounded-lg py-2.5 text-sm font-semibold hover:bg-green-700 transition-colors disabled:opacity-50"
+          className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg h-10 text-[13px] font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
         >
-          {loading ? 'Exporting…' : 'Download CSV'}
+          {loading ? 'Exporting…' : `Download CSV`}
         </button>
       </div>
     </div>

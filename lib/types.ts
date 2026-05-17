@@ -10,25 +10,27 @@ export type LeadStatus =
   | 'HOME_DEMO_COMPLETED'
   | 'SALE'
 
-export const PRODUCTS = [
-  'Ather Rizta',
-  'Oben Rorr Ez Sigma',
-  'Bajaj Chetak',
-  'TVS iQube',
-] as const
+export type TimeSlot = 'MORNING' | 'EVENING'
+
+export type BookingStatus = 'PENDING' | 'CONFIRMED' | 'CANCELLED'
 
 export interface Lead {
-  id: string
-  name: string
-  email: string
-  phone: string
-  address: string
-  status: LeadStatus
-  product: string | null
-  notes: string | null
+  id: number
+  fullName: string
+  email: string | null
+  mobileNumber: string
+  addressLine: string
+  pincode: string | null
+  productId: string | null
+  productName: string | null
+  productBrand: string | null
   demoDate: string | null
+  timeSlot: TimeSlot | null
+  confirmedDemoAt: string | null
+  crmStatus: LeadStatus
+  crmNotes: string | null
+  bookingStatus: BookingStatus
   createdAt: string
-  updatedAt: string
 }
 
 export const COLUMN_ORDER: LeadStatus[] = [

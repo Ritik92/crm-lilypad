@@ -28,38 +28,46 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 flex items-center justify-center">
-      <div className="bg-white rounded-2xl shadow-lg p-10 w-full max-w-sm mx-4">
-        <div className="text-center mb-8">
-          <span className="text-5xl">🌿</span>
-          <h1 className="text-2xl font-bold text-slate-800 mt-3">Lilypad CRM</h1>
-          <p className="text-slate-500 text-sm mt-1">Sign in to access the pipeline</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-50 to-emerald-50/40 flex items-center justify-center px-4">
+      <div className="bg-white rounded-2xl shadow-xl border border-slate-200/60 p-9 w-full max-w-sm">
+        <div className="text-center mb-7">
+          <div className="inline-flex h-12 w-12 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 items-center justify-center text-white shadow-md">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
+              <path d="M12 2C8 6 4 9 4 14a8 8 0 0 0 16 0c0-5-4-8-8-12z" />
+            </svg>
+          </div>
+          <h1 className="text-[20px] font-semibold text-slate-900 mt-4 tracking-tight">Lilypad CRM</h1>
+          <p className="text-slate-500 text-[13px] mt-1">Sign in to access the pipeline</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+            <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-[0.06em] mb-1.5">
               Password
             </label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-300 focus:border-transparent"
+              className="w-full border border-slate-200 hover:border-slate-300 rounded-lg px-3 h-10 text-[13px] focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400 transition-colors"
               placeholder="Enter team password"
               autoFocus
               required
             />
           </div>
 
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+          {error && (
+            <div className="bg-red-50 border border-red-100 text-red-700 text-[12px] rounded-lg px-3 py-2">
+              {error}
+            </div>
+          )}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-green-600 text-white rounded-lg py-2.5 text-sm font-semibold hover:bg-green-700 transition-colors disabled:opacity-50"
+            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg h-10 text-[13px] font-semibold transition-colors disabled:opacity-50 shadow-sm"
           >
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loading ? 'Signing in…' : 'Sign in'}
           </button>
         </form>
       </div>

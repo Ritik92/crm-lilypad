@@ -23,15 +23,16 @@ export default function SearchBar({ value, onChange }: Props) {
       </svg>
       <input
         type="text"
-        placeholder="Search by name, email, or phone…"
+        placeholder="Search name, email, phone…"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="pl-9 pr-8 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-300 focus:border-transparent w-72 bg-white"
+        className="pl-9 pr-8 h-8 border border-slate-200 hover:border-slate-300 rounded-lg text-[13px] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400 w-72 bg-slate-50/60 focus:bg-white transition-colors"
       />
       {value && (
         <button
           onClick={() => onChange('')}
-          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xl leading-none"
+          className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 text-lg leading-none w-5 h-5 flex items-center justify-center"
+          aria-label="Clear search"
         >
           ×
         </button>

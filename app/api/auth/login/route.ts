@@ -1,19 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getIronSession } from 'iron-session'
 import { cookies } from 'next/headers'
-import bcrypt from 'bcryptjs'
 import { sessionOptions, SessionData } from '@/lib/auth'
 
 export async function POST(req: NextRequest) {
   const { password } = await req.json()
 
-  const hash = process.env.ADMIN_PASSWORD
-  if (!hash) {
+  const expected = process.env.ADMIN_PASSWORD
+  if (!expected) {
     return NextResponse.json({ error: 'Server misconfigured' }, { status: 500 })
   }
 
-  const valid = await bcrypt.compare(password, hash)
-  if (!valid) {
+  if (password !== expected) {
     return NextResponse.json({ error: 'Invalid password' }, { status: 401 })
   }
 

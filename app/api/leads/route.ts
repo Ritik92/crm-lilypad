@@ -1,21 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { backendFetch, BackendError } from '@/lib/backend'
+import type { Lead } from '@/lib/types'
 
 export async function GET(req: NextRequest) {
-  const search = req.nextUrl.searchParams.get('search') ?? ''
+  const { searchParams } = req.nextUrl
+  const from = searchParams.get('from')
+  const to = searchParams.get('to')
+  const status = searchParams.get('status')
 
-  const leads = await db.lead.findMany({
-    where: search
-      ? {
-          OR: [
-            { name: { contains: search, mode: 'insensitive' } },
-            { email: { contains: search, mode: 'insensitive' } },
-            { phone: { contains: search, mode: 'insensitive' } },
-          ],
-        }
-      : undefined,
-    orderBy: { createdAt: 'desc' },
-  })
+  const qs = new URLSearchParams()
+  if (from) qs.set('from', from)
+  if (to) qs.set('to', to)
+  if (status) qs.set('status', status)
+  const suffix = qs.toString() ? `?${qs.toString()}` : ''
 
-  return NextResponse.json(leads)
+  try {
+    const leads = await backendFetch<Lead[]>(`/v1/admin/crm/leads${suffix}`)
+    return NextResponse.json(leads)
+  } catch (e) {
+    const err = e as BackendError
+    return NextResponse.json({ error: err.message }, { status: err.status || 500 })
+  }
 }

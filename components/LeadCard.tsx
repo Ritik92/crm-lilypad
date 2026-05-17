@@ -13,73 +13,75 @@ function getDaysAgo(dateStr: string) {
   return Math.floor((Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24))
 }
 
-const PRODUCT_COLORS: Record<string, string> = {
-  'Ather Rizta': 'bg-sky-100 text-sky-700',
-  'Oben Rorr Ez Sigma': 'bg-orange-100 text-orange-700',
-  'Bajaj Chetak': 'bg-emerald-100 text-emerald-700',
-  'TVS iQube': 'bg-violet-100 text-violet-700',
-}
-
-function getProductColor(product: string) {
-  return PRODUCT_COLORS[product] ?? 'bg-slate-100 text-slate-600'
-}
-
 export default function LeadCard({ lead, index, onClick }: Props) {
   const days = getDaysAgo(lead.createdAt)
-  const ageBadgeClass =
-    days > 7
-      ? 'bg-red-100 text-red-700'
-      : days > 3
-      ? 'bg-yellow-100 text-yellow-700'
-      : 'bg-slate-100 text-slate-500'
 
-  const showDate =
-    lead.demoDate &&
-    (lead.status === 'HOME_DEMO_SCHEDULED' || lead.status === 'HOME_DEMO_COMPLETED')
+  const ageLabel = days === 0 ? 'today' : `${days}d`
+  const ageClass =
+    days > 7
+      ? 'text-red-600'
+      : days > 3
+      ? 'text-amber-600'
+      : 'text-slate-400'
+
+  const showDemoDate =
+    lead.crmStatus === 'HOME_DEMO_SCHEDULED' || lead.crmStatus === 'HOME_DEMO_COMPLETED'
+
+  const demoTimestamp = lead.confirmedDemoAt ?? lead.demoDate
 
   return (
-    <Draggable draggableId={lead.id} index={index}>
+    <Draggable draggableId={String(lead.id)} index={index}>
       {(provided, snapshot) => (
         <div
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           onClick={onClick}
-          className={`bg-white rounded-lg border p-3 cursor-pointer select-none transition-all ${
+          className={`group bg-white rounded-lg border border-slate-200/80 px-3 py-2.5 cursor-pointer select-none transition-all duration-150 ${
             snapshot.isDragging
-              ? 'shadow-xl border-green-300 rotate-1'
-              : 'border-slate-200 hover:border-green-300 hover:shadow-sm'
+              ? 'shadow-lg border-emerald-300 ring-1 ring-emerald-200/50'
+              : 'hover:border-slate-300 hover:shadow-[0_2px_8px_rgba(15,23,42,0.06)]'
           }`}
         >
-          <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0">
-              <p className="font-semibold text-sm text-slate-800 truncate">{lead.name}</p>
-              <p className="text-xs text-slate-500 truncate mt-0.5">{lead.phone}</p>
-            </div>
-            {lead.product && (
-              <span className={`text-xs rounded-full px-2 py-0.5 font-medium whitespace-nowrap flex-shrink-0 mt-0.5 ${getProductColor(lead.product)}`}>
-                {lead.product}
+          {/* Name */}
+          <p className="font-medium text-[13px] text-slate-800 leading-snug truncate">
+            {lead.fullName}
+          </p>
+
+          {/* Phone + product line */}
+          <div className="flex items-center justify-between gap-2 mt-1 text-[11px] text-slate-500">
+            <span className="truncate font-mono tabular-nums">{lead.mobileNumber}</span>
+            {lead.productName && (
+              <span className="truncate text-slate-400 text-right max-w-[55%]">
+                {lead.productName}
               </span>
             )}
           </div>
 
-          <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-            {days >= 0 && (
-              <span className={`text-xs rounded-full px-2 py-0.5 font-medium ${ageBadgeClass}`}>
-                {days === 0 ? 'Today' : `${days}d`}
-              </span>
-            )}
-            {showDate && (
-              <span className="text-xs bg-purple-50 text-purple-600 rounded-full px-2 py-0.5 font-medium">
-                {new Date(lead.demoDate!).toLocaleDateString('en-US', {
-                  month: 'short',
-                  day: 'numeric',
-                  hour: 'numeric',
-                  minute: '2-digit',
-                })}
-              </span>
-            )}
-          </div>
+          {/* Footer: age + demo time */}
+          {(showDemoDate && demoTimestamp) || days >= 0 ? (
+            <div className="flex items-center justify-between gap-2 mt-2 pt-2 border-t border-slate-100">
+              <span className={`text-[10px] font-medium ${ageClass}`}>{ageLabel}</span>
+              {showDemoDate && demoTimestamp && (
+                <span className="text-[10px] font-medium text-purple-600 truncate">
+                  {new Date(demoTimestamp).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    ...(lead.confirmedDemoAt
+                      ? { hour: 'numeric', minute: '2-digit' }
+                      : {}),
+                  })}
+                  {!lead.confirmedDemoAt && lead.timeSlot && (
+                    <span className="text-slate-400">
+                      {' · '}
+                      {lead.timeSlot[0]}
+                      {lead.timeSlot.slice(1).toLowerCase()}
+                    </span>
+                  )}
+                </span>
+              )}
+            </div>
+          ) : null}
         </div>
       )}
     </Draggable>

@@ -2,6 +2,90 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  background-color: #f1f5f9;
+:root {
+  --bg: #f8fafc;
+  --panel: #ffffff;
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --text: #0f172a;
+  --text-muted: #64748b;
+  --text-faint: #94a3b8;
+  --accent: #10b981;
 }
+
+html, body {
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+/* Thin, refined scrollbars — visible but unobtrusive */
+.crm-scroll::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+.crm-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.crm-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+}
+.crm-scroll::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+.crm-scroll::-webkit-scrollbar-corner {
+  background: transparent;
+}
+.crm-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+/* Skeleton loader: gradient shimmer for placeholder blocks */
+@keyframes crm-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Skeleton loader: subtle staggered fade/rise for columns */
+@keyframes crm-rise {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Floating pill: slide up from below, accounting for -50% X centering */
+@keyframes crm-pill-rise {
+  from { opacity: 0; transform: translate(-50%, 12px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.crm-pill-rise {
+  animation: crm-pill-rise 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.crm-skeleton {
+  background: linear-gradient(
+    90deg,
+    #f1f5f9 0%,
+    #e2e8f0 50%,
+    #f1f5f9 100%
+  );
+  background-size: 200% 100%;
+  animation: crm-shimmer 1.8s linear infinite;
+}
+
+.crm-rise {
+  animation: crm-rise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Column accent bar gradient helper */
+.col-accent-lead       { background: linear-gradient(90deg, #94a3b8, #cbd5e1); }
+.col-accent-not-resp   { background: linear-gradient(90deg, #f97316, #fdba74); }
+.col-accent-callback   { background: linear-gradient(90deg, #eab308, #fde047); }
+.col-accent-interested { background: linear-gradient(90deg, #3b82f6, #93c5fd); }
+.col-accent-first-fu   { background: linear-gradient(90deg, #06b6d4, #67e8f9); }
+.col-accent-second-fu  { background: linear-gradient(90deg, #14b8a6, #5eead4); }
+.col-accent-not-int    { background: linear-gradient(90deg, #ef4444, #fca5a5); }
+.col-accent-demo-sched { background: linear-gradient(90deg, #a855f7, #d8b4fe); }
+.col-accent-demo-done  { background: linear-gradient(90deg, #6366f1, #a5b4fc); }
+.col-accent-sale       { background: linear-gradient(90deg, #10b981, #6ee7b7); }
