@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Board from '@/components/Board'
 import SearchBar from '@/components/SearchBar'
@@ -20,6 +20,20 @@ import {
 import type { Lead } from '@/lib/types'
 
 export default function HomePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-slate-50">
+          <p className="text-slate-400 text-sm">Loading…</p>
+        </div>
+      }
+    >
+      <HomePageInner />
+    </Suspense>
+  )
+}
+
+function HomePageInner() {
   const [searchQuery, setSearchQuery] = useState('')
   const [showExport, setShowExport] = useState(false)
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS)
