@@ -38,3 +38,18 @@ export async function PATCH(
     return NextResponse.json({ error: err.message }, { status: err.status || 500 })
   }
 }
+
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    await backendFetch<void>(`/v1/admin/crm/leads/${params.id}`, {
+      method: 'DELETE',
+    })
+    return new NextResponse(null, { status: 204 })
+  } catch (e) {
+    const err = e as BackendError
+    return NextResponse.json({ error: err.message }, { status: err.status || 500 })
+  }
+}

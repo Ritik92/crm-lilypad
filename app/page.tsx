@@ -113,6 +113,10 @@ function HomePageInner() {
     setAllLeads((prev) => prev.map((l) => (l.id === updated.id ? updated : l)))
   }
 
+  const handleLeadDelete = (leadId: number) => {
+    setAllLeads((prev) => prev.filter((l) => l.id !== leadId))
+  }
+
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' })
     window.location.href = '/login'
@@ -197,6 +201,7 @@ function HomePageInner() {
         loading={loading}
         error={error}
         onLeadUpdate={handleLeadUpdate}
+        onLeadDelete={handleLeadDelete}
       />
 
       {showExport && <ExportModal onClose={() => setShowExport(false)} />}

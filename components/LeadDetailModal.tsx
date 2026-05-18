@@ -7,6 +7,7 @@ interface Props {
   lead: Lead
   onClose: () => void
   onUpdate: (lead: Lead) => void
+  onDelete: (leadId: number) => void
 }
 
 function formatTimeSlot(slot: Lead['timeSlot']) {
@@ -28,13 +29,33 @@ const STATUS_DOT: Record<Lead['crmStatus'], string> = {
   SALE: 'bg-emerald-500',
 }
 
-export default function LeadDetailModal({ lead, onClose, onUpdate }: Props) {
+export default function LeadDetailModal({ lead, onClose, onUpdate, onDelete }: Props) {
   const [notes, setNotes] = useState(lead.crmNotes ?? '')
   const [savedNotes, setSavedNotes] = useState(lead.crmNotes ?? '')
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   const isDirty = notes !== savedNotes
+
+  const handleDelete = async () => {
+    if (deleting) return
+    setDeleting(true)
+    setDeleteError(null)
+    try {
+      const res = await fetch(`/api/leads/${lead.id}`, { method: 'DELETE' })
+      if (!res.ok && res.status !== 204) {
+        const text = await res.text().catch(() => '')
+        throw new Error(text || `Delete failed (${res.status})`)
+      }
+      onDelete(lead.id)
+    } catch (e) {
+      setDeleteError(e instanceof Error ? e.message : 'Delete failed')
+      setDeleting(false)
+    }
+  }
 
   const handleSaveNotes = async () => {
     if (!isDirty || saving) return
@@ -60,6 +81,7 @@ export default function LeadDetailModal({ lead, onClose, onUpdate }: Props) {
   const fullAddress = [lead.addressLine, lead.pincode].filter(Boolean).join(' · ')
 
   return (
+    <>
     <div className="fixed inset-0 z-50 flex" onClick={onClose}>
       <div className="flex-1 bg-slate-900/30 backdrop-blur-[2px]" />
       <div
@@ -75,13 +97,24 @@ export default function LeadDetailModal({ lead, onClose, onUpdate }: Props) {
               <p className="text-[12px] text-slate-500">{COLUMN_LABELS[lead.crmStatus]}</p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-md w-7 h-7 flex items-center justify-center text-xl leading-none flex-shrink-0 -mr-1 transition-colors"
-            aria-label="Close"
-          >
-            ×
-          </button>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button
+              onClick={() => {
+                setConfirmingDelete(true)
+                setDeleteError(null)
+              }}
+              className="inline-flex items-center h-7 px-3 rounded-md bg-red-600 hover:bg-red-700 text-white text-[12px] font-semibold transition-colors shadow-sm"
+            >
+              Delete
+            </button>
+            <button
+              onClick={onClose}
+              className="text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-md w-7 h-7 flex items-center justify-center text-xl leading-none -mr-1 transition-colors"
+              aria-label="Close"
+            >
+              ×
+            </button>
+          </div>
         </div>
 
         {/* Contact Info */}
@@ -191,8 +224,69 @@ export default function LeadDetailModal({ lead, onClose, onUpdate }: Props) {
             </div>
           </div>
         </div>
+
       </div>
     </div>
+
+    {confirmingDelete && (
+      <div
+        className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-[3px] px-4"
+        onClick={() => {
+          if (deleting) return
+          setConfirmingDelete(false)
+          setDeleteError(null)
+        }}
+      >
+        <div
+          className="bg-white rounded-2xl shadow-2xl p-7 w-full max-w-sm"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-start gap-3 mb-5">
+            <div className="h-10 w-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center flex-shrink-0">
+              <TrashIcon />
+            </div>
+            <div className="min-w-0">
+              <h2 className="text-[15px] font-semibold text-slate-900">Delete this lead?</h2>
+              <p className="text-[12px] text-slate-500 mt-1 leading-relaxed break-words">
+                {lead.fullName} will be removed from the board.
+              </p>
+            </div>
+          </div>
+
+          {deleteError && (
+            <p className="text-red-600 text-[12px] mb-3">{deleteError}</p>
+          )}
+
+          <div className="flex gap-2.5 mt-6">
+            <button
+              onClick={() => {
+                setConfirmingDelete(false)
+                setDeleteError(null)
+              }}
+              disabled={deleting}
+              className="flex-1 border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg h-9 text-[13px] font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              className="flex-1 inline-flex items-center justify-center gap-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg h-9 text-[13px] font-medium transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {deleting ? (
+                <>
+                  <Spinner />
+                  Deleting…
+                </>
+              ) : (
+                'Delete'
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   )
 }
 
@@ -268,6 +362,18 @@ function Spinner() {
     <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none">
       <circle cx="12" cy="12" r="10" stroke="currentColor" strokeOpacity="0.25" strokeWidth="3" />
       <path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function TrashIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+      <path d="M3 6h18" />
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+      <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+      <path d="M10 11v6" />
+      <path d="M14 11v6" />
     </svg>
   )
 }

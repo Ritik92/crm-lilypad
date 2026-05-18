@@ -38,7 +38,7 @@ const COLUMN_DOT: Record<LeadStatus, string> = {
 
 export default function Column({ status, leads, onCardClick }: Props) {
   return (
-    <div className="flex-shrink-0 w-64 flex flex-col rounded-xl bg-white border border-slate-200/80 shadow-[0_1px_2px_rgba(15,23,42,0.04)] h-full overflow-hidden">
+    <div className="flex-shrink-0 w-64 flex flex-col rounded-xl bg-white border border-slate-200/80 shadow-[0_1px_2px_rgba(15,23,42,0.04)] min-h-full">
       {/* Accent bar */}
       <div className={`h-[3px] flex-shrink-0 ${COLUMN_ACCENTS[status]}`} />
 
@@ -60,7 +60,7 @@ export default function Column({ status, leads, onCardClick }: Props) {
           <div
             ref={provided.innerRef}
             {...provided.droppableProps}
-            className={`crm-scroll flex-1 flex flex-col gap-2 px-2 pt-1 pb-2 min-h-[120px] overflow-y-auto transition-colors duration-150 ${
+            className={`flex-1 flex flex-col gap-2 px-2 pt-1 pb-2 min-h-[120px] transition-colors duration-150 ${
               snapshot.isDraggingOver ? 'bg-emerald-50/60' : ''
             }`}
           >

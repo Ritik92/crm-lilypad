@@ -13,9 +13,10 @@ interface Props {
   loading: boolean
   error: string | null
   onLeadUpdate: (lead: Lead) => void
+  onLeadDelete: (leadId: number) => void
 }
 
-export default function Board({ leads, loading, error, onLeadUpdate }: Props) {
+export default function Board({ leads, loading, error, onLeadUpdate, onLeadDelete }: Props) {
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null)
   const [pendingMove, setPendingMove] = useState<{ leadId: number } | null>(null)
 
@@ -103,7 +104,7 @@ export default function Board({ leads, loading, error, onLeadUpdate }: Props) {
     <>
       <DragDropContext onDragEnd={onDragEnd}>
         <div
-          className="crm-scroll flex gap-3 px-4 pt-4 pb-3 overflow-x-auto overflow-y-hidden"
+          className="crm-scroll flex items-start gap-3 px-4 pt-4 pb-3 overflow-auto"
           style={{ height: 'calc(100vh - 57px - 44px)' }}
         >
           {COLUMN_ORDER.map((status) => (
@@ -124,6 +125,10 @@ export default function Board({ leads, loading, error, onLeadUpdate }: Props) {
           onUpdate={(updated) => {
             onLeadUpdate(updated)
             setSelectedLead(updated)
+          }}
+          onDelete={(leadId) => {
+            onLeadDelete(leadId)
+            setSelectedLead(null)
           }}
         />
       )}
