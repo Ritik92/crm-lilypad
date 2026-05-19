@@ -22,3 +22,23 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: err.message }, { status: err.status || 500 })
   }
 }
+
+export async function POST(req: NextRequest) {
+  let body: unknown
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+  }
+
+  try {
+    const created = await backendFetch<Lead>('/v1/admin/crm/leads', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    })
+    return NextResponse.json(created, { status: 201 })
+  } catch (e) {
+    const err = e as BackendError
+    return NextResponse.json({ error: err.message }, { status: err.status || 500 })
+  }
+}

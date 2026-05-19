@@ -6,6 +6,7 @@ import Board from '@/components/Board'
 import SearchBar from '@/components/SearchBar'
 import ExportModal from '@/components/ExportModal'
 import FilterBar from '@/components/FilterBar'
+import CreateLeadModal from '@/components/CreateLeadModal'
 import {
   DEFAULT_RANGE,
   EMPTY_FILTERS,
@@ -36,6 +37,7 @@ export default function HomePage() {
 function HomePageInner() {
   const [searchQuery, setSearchQuery] = useState('')
   const [showExport, setShowExport] = useState(false)
+  const [showCreate, setShowCreate] = useState(false)
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS)
   const [range, setRange] = useState<RangeFilter>(DEFAULT_RANGE)
   const [allLeads, setAllLeads] = useState<Lead[]>([])
@@ -167,6 +169,15 @@ function HomePageInner() {
         </div>
         <SearchBar value={searchQuery} onChange={setSearchQuery} />
         <button
+          onClick={() => setShowCreate(true)}
+          className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg px-3 h-8 text-[13px] font-medium transition-colors shadow-sm"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+          Add lead
+        </button>
+        <button
           onClick={() => setShowExport(true)}
           className="inline-flex items-center gap-1.5 text-slate-600 hover:text-slate-900 border border-slate-200 hover:border-slate-300 rounded-lg px-3 h-8 text-[13px] font-medium transition-colors"
         >
@@ -205,6 +216,12 @@ function HomePageInner() {
       />
 
       {showExport && <ExportModal onClose={() => setShowExport(false)} />}
+      {showCreate && (
+        <CreateLeadModal
+          onClose={() => setShowCreate(false)}
+          onCreated={(lead) => setAllLeads((prev) => [lead, ...prev])}
+        />
+      )}
     </div>
   )
 }
