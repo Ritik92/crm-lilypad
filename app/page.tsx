@@ -7,6 +7,7 @@ import SearchBar from '@/components/SearchBar'
 import ExportModal from '@/components/ExportModal'
 import FilterBar from '@/components/FilterBar'
 import CreateLeadModal from '@/components/CreateLeadModal'
+import NotifyMeView from '@/components/NotifyMeView'
 import {
   DEFAULT_RANGE,
   EMPTY_FILTERS,
@@ -19,6 +20,8 @@ import {
   rangeToFromDate,
 } from '@/lib/filters'
 import type { Lead } from '@/lib/types'
+
+type View = 'leads' | 'notify-me'
 
 export default function HomePage() {
   return (
@@ -35,6 +38,7 @@ export default function HomePage() {
 }
 
 function HomePageInner() {
+  const [view, setView] = useState<View>('leads')
   const [searchQuery, setSearchQuery] = useState('')
   const [showExport, setShowExport] = useState(false)
   const [showCreate, setShowCreate] = useState(false)
@@ -50,18 +54,21 @@ function HomePageInner() {
   const initialized = useRef(false)
   const fetchSeq = useRef(0)
 
-  // Read filters + range from URL on first mount
+  // Read filters + range + view from URL on first mount
   useEffect(() => {
     const sp = new URLSearchParams(params.toString())
     setFilters(filtersFromSearchParams(sp))
     setRange(rangeFromSearchParams(sp))
+    const v = sp.get('view')
+    if (v === 'notify-me') setView('notify-me')
     initialized.current = true
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Fetch leads — runs on initial mount AND whenever `range` changes
+  // Fetch leads — only when leads view is active
   useEffect(() => {
     if (!initialized.current) return
+    if (view !== 'leads') return
     const seq = ++fetchSeq.current
     const isInitial = allLeads.length === 0 && loading
     if (!isInitial) setRefreshing(true)
@@ -82,7 +89,7 @@ function HomePageInner() {
         return r.json()
       })
       .then((data) => {
-        if (seq !== fetchSeq.current) return // stale response
+        if (seq !== fetchSeq.current) return
         if (data) setAllLeads(data)
         setLoading(false)
         setRefreshing(false)
@@ -94,20 +101,27 @@ function HomePageInner() {
         setRefreshing(false)
       })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [range, initialized.current])
+  }, [range, view, initialized.current])
 
   const updateFilters = (next: Filters) => {
     setFilters(next)
-    syncUrl(next, range)
+    syncUrl(next, range, view)
   }
 
   const updateRange = (next: RangeFilter) => {
     setRange(next)
-    syncUrl(filters, next)
+    syncUrl(filters, next, view)
   }
 
-  const syncUrl = (f: Filters, r: RangeFilter) => {
-    const qs = filtersToSearchParams(f, r).toString()
+  const updateView = (next: View) => {
+    setView(next)
+    syncUrl(filters, range, next)
+  }
+
+  const syncUrl = (f: Filters, r: RangeFilter, v: View) => {
+    const sp = filtersToSearchParams(f, r)
+    if (v !== 'leads') sp.set('view', v)
+    const qs = sp.toString()
     router.replace(qs ? `/?${qs}` : '/', { scroll: false })
   }
 
@@ -156,7 +170,7 @@ function HomePageInner() {
   return (
     <div className="min-h-screen bg-slate-50">
       <header className="bg-white/95 backdrop-blur-sm border-b border-slate-200/80 px-5 h-[57px] flex items-center gap-4 sticky top-0 z-20">
-        <div className="flex items-center gap-2.5 mr-auto">
+        <div className="flex items-center gap-2.5">
           <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white shadow-sm">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
               <path d="M12 2C8 6 4 9 4 14a8 8 0 0 0 16 0c0-5-4-8-8-12z" />
@@ -167,61 +181,116 @@ function HomePageInner() {
             <span className="text-[10px] text-slate-400 uppercase tracking-[0.12em] mt-0.5">CRM</span>
           </div>
         </div>
-        <SearchBar value={searchQuery} onChange={setSearchQuery} />
-        <button
-          onClick={() => setShowCreate(true)}
-          className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg px-3 h-8 text-[13px] font-medium transition-colors shadow-sm"
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
-            <path d="M12 5v14M5 12h14" />
-          </svg>
-          Add lead
-        </button>
-        <button
-          onClick={() => setShowExport(true)}
-          className="inline-flex items-center gap-1.5 text-slate-600 hover:text-slate-900 border border-slate-200 hover:border-slate-300 rounded-lg px-3 h-8 text-[13px] font-medium transition-colors"
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
-            <path d="M12 3v12" />
-            <path d="m7 10 5 5 5-5" />
-            <path d="M5 21h14" />
-          </svg>
-          Export
-        </button>
-        <button
-          onClick={handleLogout}
-          className="text-slate-400 hover:text-slate-700 text-[13px] transition-colors"
-        >
-          Logout
-        </button>
+
+        <Tabs view={view} onChange={updateView} />
+
+        <div className="ml-auto flex items-center gap-4">
+          <SearchBar value={searchQuery} onChange={setSearchQuery} />
+          {view === 'leads' && (
+            <>
+              <button
+                onClick={() => setShowCreate(true)}
+                className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg px-3 h-8 text-[13px] font-medium transition-colors shadow-sm"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+                Add lead
+              </button>
+              <button
+                onClick={() => setShowExport(true)}
+                className="inline-flex items-center gap-1.5 text-slate-600 hover:text-slate-900 border border-slate-200 hover:border-slate-300 rounded-lg px-3 h-8 text-[13px] font-medium transition-colors"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
+                  <path d="M12 3v12" />
+                  <path d="m7 10 5 5 5-5" />
+                  <path d="M5 21h14" />
+                </svg>
+                Export
+              </button>
+            </>
+          )}
+          <button
+            onClick={handleLogout}
+            className="text-slate-400 hover:text-slate-700 text-[13px] transition-colors"
+          >
+            Logout
+          </button>
+        </div>
       </header>
 
-      <FilterBar
-        filters={filters}
-        onChange={updateFilters}
-        range={range}
-        onRangeChange={updateRange}
-        refreshing={refreshing}
-        availableBrands={availableBrands}
-        filteredCount={filteredLeads.length}
-        totalCount={allLeads.length}
-      />
+      {view === 'leads' ? (
+        <>
+          <FilterBar
+            filters={filters}
+            onChange={updateFilters}
+            range={range}
+            onRangeChange={updateRange}
+            refreshing={refreshing}
+            availableBrands={availableBrands}
+            filteredCount={filteredLeads.length}
+            totalCount={allLeads.length}
+          />
 
-      <Board
-        leads={filteredLeads}
-        loading={loading}
-        error={error}
-        onLeadUpdate={handleLeadUpdate}
-        onLeadDelete={handleLeadDelete}
-      />
+          <Board
+            leads={filteredLeads}
+            loading={loading}
+            error={error}
+            onLeadUpdate={handleLeadUpdate}
+            onLeadDelete={handleLeadDelete}
+          />
+        </>
+      ) : (
+        <NotifyMeView
+          searchQuery={searchQuery}
+          range={range}
+          onRangeChange={updateRange}
+        />
+      )}
 
-      {showExport && <ExportModal onClose={() => setShowExport(false)} />}
-      {showCreate && (
+      {view === 'leads' && showExport && <ExportModal onClose={() => setShowExport(false)} />}
+      {view === 'leads' && showCreate && (
         <CreateLeadModal
           onClose={() => setShowCreate(false)}
           onCreated={(lead) => setAllLeads((prev) => [lead, ...prev])}
         />
       )}
     </div>
+  )
+}
+
+function Tabs({ view, onChange }: { view: View; onChange: (v: View) => void }) {
+  return (
+    <div className="flex items-center gap-1 bg-slate-100 rounded-lg p-0.5">
+      <TabButton active={view === 'leads'} onClick={() => onChange('leads')}>
+        Leads
+      </TabButton>
+      <TabButton active={view === 'notify-me'} onClick={() => onChange('notify-me')}>
+        Notify Me
+      </TabButton>
+    </div>
+  )
+}
+
+function TabButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean
+  onClick: () => void
+  children: React.ReactNode
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-3 h-7 rounded-md text-[12px] font-medium transition-colors ${
+        active
+          ? 'bg-white text-slate-900 shadow-sm'
+          : 'text-slate-600 hover:text-slate-900'
+      }`}
+    >
+      {children}
+    </button>
   )
 }

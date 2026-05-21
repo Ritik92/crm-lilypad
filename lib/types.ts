@@ -33,6 +33,23 @@ export interface Lead {
   createdAt: string
 }
 
+export interface NotifyMeRequest {
+  id: number
+  fullName: string
+  email: string
+  phoneNumber: string
+  pincode: string
+  address: string
+  productId: string | null
+  productName: string | null
+  variantName: string | null
+  colorName: string | null
+  confirmedDemoAt: string | null
+  crmStatus: LeadStatus
+  crmNotes: string | null
+  createdAt: string
+}
+
 export const COLUMN_ORDER: LeadStatus[] = [
   'LEAD',
   'NOT_RESPONDING',
