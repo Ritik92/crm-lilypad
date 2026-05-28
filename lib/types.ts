@@ -31,6 +31,7 @@ export interface Lead {
   crmNotes: string | null
   bookingStatus: BookingStatus
   createdAt: string
+  updatedAt?: string | null
 }
 
 export interface NotifyMeRequest {

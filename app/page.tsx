@@ -8,6 +8,8 @@ import ExportModal from '@/components/ExportModal'
 import FilterBar from '@/components/FilterBar'
 import CreateLeadModal from '@/components/CreateLeadModal'
 import NotifyMeView from '@/components/NotifyMeView'
+import { computeDsr } from '@/lib/dsr'
+import { renderDsrPng, downloadDsrPng } from '@/lib/dsrImage'
 import {
   DEFAULT_RANGE,
   EMPTY_FILTERS,
@@ -42,6 +44,7 @@ function HomePageInner() {
   const [searchQuery, setSearchQuery] = useState('')
   const [showExport, setShowExport] = useState(false)
   const [showCreate, setShowCreate] = useState(false)
+  const [sharing, setSharing] = useState(false)
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS)
   const [range, setRange] = useState<RangeFilter>(DEFAULT_RANGE)
   const [allLeads, setAllLeads] = useState<Lead[]>([])
@@ -138,6 +141,26 @@ function HomePageInner() {
     window.location.href = '/login'
   }
 
+  const handleShareDsr = async () => {
+    if (sharing) return
+    setSharing(true)
+    try {
+      // Fetch unfiltered leads so MTD / Today-Sales counts aren't truncated
+      // by the active range filter.
+      const res = await fetch('/api/leads')
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const all = (await res.json()) as Lead[]
+      const report = computeDsr(all)
+      const blob = await renderDsrPng(report)
+      downloadDsrPng(blob, report.dateLabel)
+    } catch (e) {
+      console.error('DSR share failed', e)
+      alert('Could not generate the daily report image.')
+    } finally {
+      setSharing(false)
+    }
+  }
+
   const availableBrands = useMemo(() => {
     const set = new Set<string>()
     let hasUnknown = false
@@ -207,6 +230,21 @@ function HomePageInner() {
                   <path d="M5 21h14" />
                 </svg>
                 Export
+              </button>
+              <button
+                onClick={handleShareDsr}
+                disabled={sharing || loading}
+                title="Download today's sales report as an image"
+                className="inline-flex items-center gap-1.5 text-slate-600 hover:text-slate-900 border border-slate-200 hover:border-slate-300 rounded-lg px-3 h-8 text-[13px] font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
+                  <circle cx="18" cy="5" r="3" />
+                  <circle cx="6" cy="12" r="3" />
+                  <circle cx="18" cy="19" r="3" />
+                  <path d="m8.59 13.51 6.83 3.98" />
+                  <path d="m15.41 6.51-6.82 3.98" />
+                </svg>
+                {sharing ? 'Generating…' : 'Share DSR'}
               </button>
             </>
           )}
